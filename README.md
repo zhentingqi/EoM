@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://arxiv.org/abs/2606.02859"><img src="https://img.shields.io/badge/arXiv-2606.02859-b31b1b.svg" alt="arXiv"></a>
-  <a href="https://arxiv.org/pdf/2606.02859"><img src="https://img.shields.io/badge/pdf-2606.02859-b31b1b.svg" alt="pdf"></a>
+  <a href="https://arxiv.org/pdf/2606.02859"><img src="https://img.shields.io/badge/pdf-2606.02859-yellow.svg" alt="pdf"></a>
   <img src="https://img.shields.io/badge/python->=3.10-blue.svg" alt="python">
   <a href="https://zhentingqi.github.io/internal/projects/EoM/"><img src="https://img.shields.io/badge/project-webpage-brightgreen.svg" alt="project webpage"></a>
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
