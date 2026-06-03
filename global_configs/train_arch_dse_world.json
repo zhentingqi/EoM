@@ -1,0 +1,69 @@
+{
+  "profile": "arch_dse_world_3agent_parallel",
+  "domain": "arch_dse_world",
+  "mode": "train",
+  "model": {
+    "api": "together",
+    "name": "google/gemma-4-31B-it",
+    "api_base": null,
+    "api_key": null,
+    "api_key_env": "TOGETHER_API_KEY",
+    "max_tokens": 8192,
+    "temperature": 0.6
+  },
+  "run": {
+    "output": "checkpoints/arch_dse_world_3agent.json",
+    "checkpoint_steps": "checkpoints/arch_dse_world_3agent_step.json",
+    "num_epochs": 1,
+    "verbose": true,
+    "n_historian": 3,
+    "n_planner": 3,
+    "n_executor": 3,
+    "budget_per_task": 10,
+    "sessions_per_layer": 5,
+    "worker_id": 0,
+    "worker_count": 1,
+    "max_eval_workers": 1
+  },
+  "mas": {
+    "engine": {
+      "max_steps_per_episode": 80,
+      "max_trials_per_episode": 1,
+      "birth_interval": 2,
+      "num_births_per_interval": 1,
+      "min_num_agents": 6,
+      "max_num_agents": 18,
+      "bid_scheme": "fixed_with_eps",
+      "novice_bid_epsilon": 0.05,
+      "base_bid": 0.1,
+      "initial_wealth": 0.5,
+      "rent": 0.02,
+      "rent_interval": 1
+    },
+    "reward": {
+      "reward_scheme": "path_reward_and_stepwise_reward",
+      "path_reward_scale": 1.0,
+      "terminal_output_bonus_scale": 1.0,
+      "env_reward_scale": 0.5,
+      "missing_terminal_score": 0.0,
+      "center_env_reward": false
+    },
+    "evolution": {
+      "p_a": 0.334,
+      "p_b": 0.334,
+      "periodical_good_p": 0.5
+    },
+    "evaluation": {
+      "periodic_test_enabled": false,
+      "periodic_test_before_training": false,
+      "periodic_test_every_n_tasks": 999,
+      "periodic_test_parallel_enabled": false,
+      "periodic_test_max_workers": 1
+    },
+    "wakeup": {
+      "wakeup_parallel_enabled": false,
+      "wakeup_max_workers": 1
+    }
+  },
+  "adapter_config": "hayekmas/adapters/arch_dse_world/configs/train_arch_dse_world-resnet50.json"
+}

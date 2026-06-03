@@ -1,0 +1,58 @@
+{
+  "run": {
+    "task_dir": "third_party/benchmarks/cloudcast-broadcast-opt",
+    "max_steps": 25,
+    "code_execution_timeout": 120,
+    "shell_timeout": 60,
+    "verifier_timeout": 300,
+    "keep_workspace": false,
+    "preserve_workspace_across_episodes": true,
+    "num_episodes": 10,
+    "output": "outputs/cloudcast_eval.json"
+  },
+  "mas": {
+    "engine": {
+      "max_steps_per_episode": 25,
+      "max_trials_per_episode": 1,
+      "birth_interval": 2,
+      "num_births_per_interval": 1,
+      "min_num_agents": 5,
+      "max_num_agents": 20,
+      "bid_scheme": "fixed_with_eps",
+      "novice_bid_epsilon": 0.005,
+      "base_bid": 0.1,
+      "initial_wealth": 1.0,
+      "rent": 0.0,
+      "rent_interval": 1
+    },
+    "reward": {
+      "reward_scheme": "path_reward_and_stepwise_reward",
+      "center_env_reward": false,
+      "env_reward_scale": 5.0,
+      "path_reward_scale": 1.0,
+      "terminal_output_bonus_scale": 0.0,
+      "missing_terminal_score": 0.0
+    },
+    "evolution": {
+      "p_a": 0.334,
+      "p_b": 0.334,
+      "periodical_good_p": 0.5
+    },
+    "wakeup": {
+      "wakeup_parallel_enabled": true,
+      "wakeup_max_workers": 6,
+      "wakeup_retry_attempts": 1,
+      "wakeup_retry_backoff_seconds": 1.0,
+      "wakeup_fail_open": false,
+      "log_wakeup": true
+    },
+    "terminal": {
+      "enabled": true,
+      "start_on_step_from_end": 2,
+      "candidate_agent_tags": [
+        "terminal"
+      ],
+      "allow_abstain_terminal_mode": true
+    }
+  }
+}

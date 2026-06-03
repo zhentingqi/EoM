@@ -1,0 +1,22 @@
+{
+  "data": {
+    "train": {
+      "files": ["third_party/benchmarks/frontier-science-research/data/research_train.jsonl"],
+      "max_tasks": 40
+    },
+    "test": {
+      "files": ["third_party/benchmarks/frontier-science-research/data/research_test.jsonl"],
+      "max_tasks": null
+    }
+  },
+  "judge": {
+    "enabled": true,
+    "threshold": 0.5,
+    "verbose": false
+  },
+  "run": {
+    "output": "checkpoints/train_research_ckpt.json",
+    "num_epochs": 2,
+    "verbose": true
+  }
+}

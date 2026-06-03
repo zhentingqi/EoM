@@ -1,0 +1,426 @@
+{
+  "_meta": {
+    "generator": "paper/arch_dse_world/build_priors.py",
+    "archetypes": [
+      "A_K128",
+      "A_L1_PQ128",
+      "A_L0_PQ32",
+      "A_C_spatial",
+      "A_pe16_sweep",
+      "A_refine"
+    ],
+    "n_layers": 24,
+    "fixed_table": true,
+    "doc": "DO NOT edit by hand. Re-run build_priors.py to regenerate."
+  },
+  "layers": {
+    "_outputs_input.8": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.11": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.36": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.73": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 weight-stationary at L0[W] (PQ at registers). Small-PQ layers benefit from placing the (P, Q) tile at L0[W] so weights stream once and stay register-stationary while outputs accumulate. This placement is ORTHOGONAL to pe_dim choice \u2014 try the L0 placement at pe_dim \u2208 {32, 64, 128}, picking pe_dim to match the layer's K and C (large K \u2192 pe=128, tiny K \u2192 pe=32). Empirically wins on layers where P\u00d7Q \u2264 ~128 and stride=2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 register-stationary direction. Direct Executor to PQ_at_L0=[P, Q] with pe_dim spanning {32, 64, 128} so the auction can compare them. Pair with K_spatial_L2 = pe_dim and small C_spatial_L1. Compare directly against the L1[O] regime.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 L0[W] PQ executor. Use intent schema with PQ_at_L0=[P, Q]. Submit 3-4 candidates per turn varying pe_dim \u2208 {32, 64, 128} and K_spatial_L2 to find the right balance for this layer's K/C ratio. Validate locally.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.76": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 weight-stationary at L0[W] (PQ at registers). Small-PQ layers benefit from placing the (P, Q) tile at L0[W] so weights stream once and stay register-stationary while outputs accumulate. This placement is ORTHOGONAL to pe_dim choice \u2014 try the L0 placement at pe_dim \u2208 {32, 64, 128}, picking pe_dim to match the layer's K and C (large K \u2192 pe=128, tiny K \u2192 pe=32). Empirically wins on layers where P\u00d7Q \u2264 ~128 and stride=2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 register-stationary direction. Direct Executor to PQ_at_L0=[P, Q] with pe_dim spanning {32, 64, 128} so the auction can compare them. Pair with K_spatial_L2 = pe_dim and small C_spatial_L1. Compare directly against the L1[O] regime.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 L0[W] PQ executor. Use intent schema with PQ_at_L0=[P, Q]. Submit 3-4 candidates per turn varying pe_dim \u2208 {32, 64, 128} and K_spatial_L2 to find the right balance for this layer's K/C ratio. Validate locally.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.80": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.131": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.2": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 small-pe regime. This layer has tiny C or tiny K; large pe_dim wastes PEs. Push the Planner toward pe_dim=16 with full sweep over K and C tiling.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 small-pe direction. pe_dim=16. Sweep K_spatial_L2 \u2208 {1, 4, 8, 16} and C_spatial_L1 \u2208 {1, 3} (since C is tiny). Vary PQ_at_L0/L1 across submits.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 small-pe executor. pe_dim=16. Submit 4-5 candidates per turn over K_spatial \u00d7 PQ placements.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.5": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.15": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.33": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.39": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.40": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.43": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.46": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.70": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.77": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.83": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 weight-stationary at L0[W] (PQ at registers). Small-PQ layers benefit from placing the (P, Q) tile at L0[W] so weights stream once and stay register-stationary while outputs accumulate. This placement is ORTHOGONAL to pe_dim choice \u2014 try the L0 placement at pe_dim \u2208 {32, 64, 128}, picking pe_dim to match the layer's K and C (large K \u2192 pe=128, tiny K \u2192 pe=32). Empirically wins on layers where P\u00d7Q \u2264 ~128 and stride=2.",
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 register-stationary direction. Direct Executor to PQ_at_L0=[P, Q] with pe_dim spanning {32, 64, 128} so the auction can compare them. Pair with K_spatial_L2 = pe_dim and small C_spatial_L1. Compare directly against the L1[O] regime.",
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 L0[W] PQ executor. Use intent schema with PQ_at_L0=[P, Q]. Submit 3-4 candidates per turn varying pe_dim \u2208 {32, 64, 128} and K_spatial_L2 to find the right balance for this layer's K/C ratio. Validate locally.",
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data."
+      ]
+    },
+    "_outputs_input.125": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.128": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 weight-stationary at L0[W] (PQ at registers). Small-PQ layers benefit from placing the (P, Q) tile at L0[W] so weights stream once and stay register-stationary while outputs accumulate. This placement is ORTHOGONAL to pe_dim choice \u2014 try the L0 placement at pe_dim \u2208 {32, 64, 128}, picking pe_dim to match the layer's K and C (large K \u2192 pe=128, tiny K \u2192 pe=32). Empirically wins on layers where P\u00d7Q \u2264 ~128 and stride=2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 register-stationary direction. Direct Executor to PQ_at_L0=[P, Q] with pe_dim spanning {32, 64, 128} so the auction can compare them. Pair with K_spatial_L2 = pe_dim and small C_spatial_L1. Compare directly against the L1[O] regime.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 L0[W] PQ executor. Use intent schema with PQ_at_L0=[P, Q]. Submit 3-4 candidates per turn varying pe_dim \u2208 {32, 64, 128} and K_spatial_L2 to find the right balance for this layer's K/C ratio. Validate locally.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.132": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.135": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_input.138": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 output-stationary at L1[O]. This layer's spatial dimensions (P, Q) are small enough to fit a full tile in the L1 accumulator. Push the Planner toward `L1[O] P<P> Q<Q> C<n>X` \u2014 the canonical output-stationary placement. Validated empirically to give 10-100\u00d7 EDP improvement over K-tiling on stride=2 / small-PQ layers.",
+        "EXPERIENCE PRIOR \u2014 weight-stationary at L0[W] (PQ at registers). Small-PQ layers benefit from placing the (P, Q) tile at L0[W] so weights stream once and stay register-stationary while outputs accumulate. This placement is ORTHOGONAL to pe_dim choice \u2014 try the L0 placement at pe_dim \u2208 {32, 64, 128}, picking pe_dim to match the layer's K and C (large K \u2192 pe=128, tiny K \u2192 pe=32). Empirically wins on layers where P\u00d7Q \u2264 ~128 and stride=2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 full-PQ-at-L1 direction. Direct the Executor to try pe_dim=128 with PQ_at_L1 = [P, Q] (entire tile at accumulator), K_spatial_L2 = 1, C_spatial_L1 = pe_dim. Both this and the K-spatial alternative should be tested in the same session.",
+        "EXPERIENCE PRIOR \u2014 register-stationary direction. Direct Executor to PQ_at_L0=[P, Q] with pe_dim spanning {32, 64, 128} so the auction can compare them. Pair with K_spatial_L2 = pe_dim and small C_spatial_L1. Compare directly against the L1[O] regime.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 L1[O] PQ executor. Use intent schema with PQ_at_L1=[P, Q] (or use Schema B raw mapping `L1[O] P<n> Q<m> C<k>X`). Default pe_dim=128. Batch 3-4 candidates varying C_spatial_L1 \u2208 {64, 128} and K_temporal_L3.",
+        "EXPERIENCE PRIOR \u2014 L0[W] PQ executor. Use intent schema with PQ_at_L0=[P, Q]. Submit 3-4 candidates per turn varying pe_dim \u2208 {32, 64, 128} and K_spatial_L2 to find the right balance for this layer's K/C ratio. Validate locally.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    },
+    "_outputs_3356": {
+      "historian": [
+        "EXPERIENCE PRIOR \u2014 large-K bias. This layer has many output channels (K \u2265 256). The dominant axis is K-spatial at L2. ALWAYS advocate pe_dim=128 with K_spatial_L2=128 (or =pe_dim) to maximize PE utilization. If recent submits use pe_dim \u2264 32, push the Planner to scale up.",
+        "EXPERIENCE PRIOR \u2014 C-spatial bias. Layers with large input channels (C \u2265 128) benefit from C-spatial at L1[O] = pe_dim. Push the Planner toward pe_dim=64-128 with C_spatial_L1=pe_dim and small-to-medium K_spatial_L2.",
+        "EXPERIENCE PRIOR \u2014 refine-around-best. After a few submits, focus on small perturbations of the current best mapping. Vary one HW knob (sp_size, acc_size) at a time. Don't restart exploration."
+      ],
+      "planner": [
+        "EXPERIENCE PRIOR \u2014 K-spatial direction. Direct the Executor to try pe_dim \u2208 {64, 128} with K_spatial_L2 = pe_dim and small C_spatial_L1 (1-8). Keep R/S at L3 temporal. This is the canonical weight-stationary-at-L2 layout for large-K convs.",
+        "EXPERIENCE PRIOR \u2014 C-spatial direction. Direct Executor to pe_dim \u2208 {64, 128}, C_spatial_L1 = pe_dim, K_spatial_L2 \u2208 {1, 8, 32}. Optionally add PQ_at_L1 for output-stationary at the accumulator.",
+        "EXPERIENCE PRIOR \u2014 refinement direction. Take the best mapping the Executor found and propose 2-3 perturbations: \u00b11 step in K_temporal_L2, \u00b11 step in C_temporal_L2, swap PQ_at_L0 vs L1."
+      ],
+      "executor": [
+        "EXPERIENCE PRIOR \u2014 K-spatial executor. Default to pe_dim=128 and submit candidates spanning K_spatial_L2 \u2208 {64, 128} with C_spatial_L1 \u2208 {1, 8, 16}. Use intent schema. Batch 3-4 candidates per turn so the next turn has comparison data.",
+        "EXPERIENCE PRIOR \u2014 C-spatial executor. Default pe_dim=64-128. Sweep K_spatial_L2 \u2208 {1, 8, 32, 64} with fixed C_spatial_L1=128. Submit 4 candidates per turn.",
+        "EXPERIENCE PRIOR \u2014 refinement executor. Take the best mapping from history and submit 2-3 small variants. Validate each locally before consuming budget."
+      ]
+    }
+  }
+}

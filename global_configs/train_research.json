@@ -1,0 +1,60 @@
+{
+  "profile": "train_research",
+  "domain": "researchworld",
+  "mode": "train",
+  "model": {
+    "api": "localhost",
+    "name": "",
+    "api_base": "http://127.0.0.1:8000/v1",
+    "api_key": null,
+    "max_tokens": 63000,
+    "temperature": 0.9
+  },
+  "run": {
+    "output": "checkpoints/hayek_research.json",
+    "num_epochs": 2,
+    "verbose": true
+  },
+  "mas": {
+    "engine": {
+      "max_steps_per_episode": 10,
+      "max_trials_per_episode": 2,
+      "birth_interval": 3,
+      "num_births_per_interval": 2,
+      "min_num_agents": 2,
+      "max_num_agents": 20,
+      "bid_scheme": "fixed",
+      "base_bid": 0.1,
+      "novice_bid_epsilon": 0.1,
+      "initial_wealth": 0.5,
+      "rent": 0.2,
+      "rent_interval": 3
+    },
+    "reward": {
+      "reward_scheme": "path_reward_and_stepwise_reward",
+      "center_env_reward": true,
+      "env_reward_scale": 1.0,
+      "path_reward_scale": 1.0,
+      "terminal_output_bonus_scale": 0.5,
+      "missing_terminal_score": 0.0
+    },
+    "evolution": {
+      "p_a": 0.334,
+      "p_b": 0.334,
+      "periodical_good_p": 0.5
+    },
+    "evaluation": {
+      "periodic_test_enabled": true,
+      "periodic_test_before_training": false,
+      "periodic_test_every_n_tasks": 3,
+      "periodic_test_parallel_enabled": true,
+      "periodic_test_max_workers": 10
+    },
+    "wakeup": {
+      "wakeup_parallel_enabled": true,
+      "wakeup_max_workers": 10,
+      "log_wakeup": false
+    }
+  },
+  "adapter_config": "hayekmas/adapters/researchworld/configs/train_research.json"
+}

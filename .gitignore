@@ -1,0 +1,105 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+jobs/env.sh
+eval_results/
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDE / editors
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# Local agent / tool caches
+.claude/
+.aider*
+.deepeval/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Model checkpoints (can be large)
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+
+# Logs / run outputs
+logs/
+*.log
+wandb/
+runs/
+tensorboard/
+cloudcast_results/
+
+# Training-run output dirs are large + ephemeral; ignore by default,
+# but keep the committed paper-run snapshot that drives the
+# arch_dse_world plot scripts and the live-demo video.
+outputs/
+!outputs/arch_dse_world_paper_run/
+!outputs/arch_dse_world_paper_run/**
+!outputs/arch_dse_world_paper_run/**/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Secrets
+.env
+.env.local
+.env.*
+*.key
+secrets/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.pdf
+
+# Build / lock / docs
+docs/
+uv.lock
+
+# Claude Code project instructions — local only, not for release
+CLAUDE.md

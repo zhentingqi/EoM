@@ -1,0 +1,13 @@
+{
+  "profile": "train_cloudcast",
+  "domain": "cloudcast",
+  "mode": "train",
+  "model": {
+    "api": "litellm",
+    "name": "openai/gpt-5-mini",
+    "api_key": null,
+    "max_tokens": 32768,
+    "temperature": 1
+  },
+  "adapter_config": "hayekmas/adapters/cloudcast/configs/train.json"
+}
