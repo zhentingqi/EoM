@@ -1,10 +1,10 @@
 <h1 align="center">Economy of Minds: Emerging Multi-Agent Intelligence with Economic Interactions</h1>
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2606.02859"><img src="https://img.shields.io/badge/paper-arxiv.2606.02859-b31b1b.svg" alt="paper"></a>
+  <a href="https://arxiv.org/abs/2606.02859"><img src="https://img.shields.io/badge/paper-arxiv.2606.02859-b31b1b.svg" alt="arXiv"></a>
   <a href="https://arxiv.org/pdf/2606.02859"><img src="https://img.shields.io/badge/pdf-arxiv.2606.02859-b31b1b.svg" alt="pdf"></a>
   <img src="https://img.shields.io/badge/python->=3.10-blue.svg" alt="python">
-  <a href="https://zhentingqi.github.io/internal/projects/EoM/"><img src="https://img.shields.io/badge/Project-Page-brightgreen.svg" alt="Project Page"></a>
+  <a href="https://zhentingqi.github.io/internal/projects/EoM/"><img src="https://img.shields.io/badge/Project-Page-brightgreen.svg" alt="project webpage"></a>
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
 </p>
 
