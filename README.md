@@ -31,12 +31,7 @@ stronger monolithic baselines across five agentic tasks — mathematical
 reasoning, financial research, scientific research, accelerator design, and
 distributed-system optimization.
 
-<details>
-<summary>📹 evolution-of-agent-society.mp4</summary>
 
-<video src="https://github.com/zhentingqi/EoM/raw/main/assets/evolution-of-agent-society.mp4" controls muted width="100%"></video>
-
-</details>
 
 ## Repository
 
