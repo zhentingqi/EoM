@@ -82,7 +82,8 @@ cd third_party/smolagents
 pip install -e ".[toolkit]"
 ```
 
-Please go to [CloudCast](#cloudcast), [Researchworld](#researchworld), and
+Please go to [CloudCast](#cloudcast),
+[Frontier-Science-Research](#frontier-science-research), and
 [Arch DSE World](#arch-dse-world) for domain-specific installations.
 
 ## Running
