@@ -33,6 +33,10 @@ distributed-system optimization.
 
 
 
+https://github.com/user-attachments/assets/bf8a5819-75aa-4452-836e-8f6b71967677
+
+
+
 ## Repository
 
 The repository is organized around a small core engine and domain adapters:
